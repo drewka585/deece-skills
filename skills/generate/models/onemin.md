@@ -1,6 +1,6 @@
 # 1min.ai (Flux Schnell / Flux 2 Pro)
 
-The prepaid lane, and therefore the **default**. Drew's dad bought a lifetime
+The prepaid lane, and therefore the **default**. The account is on a lifetime
 deal, so these runs draw down a credit balance that is already paid for: zero
 marginal dollars. Prefer 1min.ai over any real-money route unless the job needs
 reference images.
