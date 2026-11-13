@@ -1,5 +1,9 @@
 # Kling 3.0
 
+> **Route changed 2026-10-02:** the `kling` alias now runs on Higgsfield (Kling 3.0 Pro
+> image-to-video, start + end frame). See [higgsfield.md](higgsfield.md). The Kie route
+> below is kept as `kling-kie` and still has no key.
+
 The sensible general-purpose video default: good motion, fair price, faster
 than Veo. This is what `--kind video` picks when nobody names a model.
 

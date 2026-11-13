@@ -21,10 +21,12 @@ is missing, add a row to `MODELS` in the script and a recipe in `models/`.
 | Image, hero/final | `nano-banana-pro` | Nano Banana 2 Pro | [models/nano-banana.md](models/nano-banana.md) |
 | Image with readable text | `gpt-image` | GPT Image 2 | [models/gpt-image.md](models/gpt-image.md) |
 | Photoreal faces, thumbnail finals | `gpt-image-hd` | GPT Image 2 @ quality=high | [models/gpt-image.md](models/gpt-image.md) |
-| Video, default | `kling` | Kling 3.0 | [models/kling.md](models/kling.md) |
+| Video, default (image-to-video, start frame required) | `kling` | Kling 3.0 Pro via Higgsfield | [models/higgsfield.md](models/higgsfield.md) |
 | Video, draft lane | `veo-fast` | Veo 3.1 Fast | [models/veo.md](models/veo.md) |
 | Video, hero | `veo` | Veo 3.1 | [models/veo.md](models/veo.md) |
+| Image-to-video test, token-priced | `omni` | Gemini Omni 1.1 Flash | [models/omni.md](models/omni.md) |
 | Reference-to-video | `seedance` | Seedance 2.0 Fast | [models/seedance.md](models/seedance.md) |
+| Image-to-video, start + end frame, 1080p | `seedance-2.5` | Seedance 2.5 via Higgsfield | [models/higgsfield.md](models/higgsfield.md) |
 
 **Read the recipe file before the first run of any model in a session.** It has
 the request shape, the response shape, and the gotchas.
@@ -33,11 +35,12 @@ the request shape, the response shape, and the gotchas.
 
 | Provider | Status | Covers |
 |---|---|---|
-| **1min.ai** | **Prepaid, lifetime deal** | `flux-schnell`, `flux-pro` — costs no real money |
+| **1min.ai** | **Prepaid, lifetime deal**. ⚠️ The key returned `401 API_KEY_INACTIVE` on 2026-10-27, and image runs fell back to Google `nano-banana`, which is paid (about $0.034 a still). Check the account before relying on it | `flux-schnell`, `flux-pro` — costs no real money while the key is active |
 | Google AI Studio | Funded (billed to Cloud) | `nano-banana*`, `veo*` |
 | OpenAI | Funded (billed) | `gpt-image`, `gpt-image-hd` |
-| fal.ai | Key valid, **balance $0** | `seedance` — 403 "Exhausted balance" until topped up |
-| Kie AI / WaveSpeed | **No key** | `kling` — exits with a signup message |
+| fal.ai | **Funded**, $24.10 on 2026-10-27. Live balance: `GET https://api.fal.ai/v1/account/billing?expand=credits` with `Authorization: Key $FAL_KEY` → `credits.current_balance` | `seedance` |
+| Higgsfield | **Funded** (Drew loaded credits, 2026-10-02), key `HF_KEY`, pay-per-use. There is no balance API (every GET returns 405) and the console at open.higgsfield.ai needs a login that Drew's Chrome does not hold, so ask Drew for the remaining balance. He reported $19.61 on 2026-10-27, after the ledger showed $26.40 spent from 2026-10-02 to 10-08. `kling` verified live 2026-10-02 (start + end frame, one run cost at most $1.26); `seedance-2.5` verified live 2026-10-08 (4s 720p, $1.85) | `kling` (Kling 3.0 Pro image-to-video, start + end frame), `seedance-2.5` (image-to-video, `--ref` start frame, `--end-frame` last frame) |
+| Kie AI / WaveSpeed | **No key** | `kling-kie` only (the old Kie route, exits with a signup message). The `kling` alias no longer uses Kie: it routes via Higgsfield, above |
 
 `python3 execution/generate_media.py list` is the live source of truth.
 
@@ -47,7 +50,9 @@ rates: 9,000 credits a schnell image, 90,000 a flux-2-pro image, against an
 18.9M balance — about 2,100 or 210 images. It has no reference-image support,
 so `--ref` auto-switches to Google and says so.
 
-Video is the one lane still on real money ($1.20 to $2.40 a clip). 1min.ai
+Video is the one lane still on real money (Veo 3.1 is $0.80 to $4.80 for an 8s clip,
+depending on Fast/Standard and resolution; Higgsfield `kling` $1.12
+for 10s, `seedance-2.5` $9.10 for 8s at 1080p, quoted at list). 1min.ai
 hosts Veo3/Kling/Sora on prepaid credits and wiring that is the biggest saving
 left on the table — see the gotchas in [models/onemin.md](models/onemin.md).
 
@@ -110,6 +115,21 @@ python3 execution/generate_media.py --prompt "slow push in" \
    the recipe file. That is the only maintenance this system needs.
 6. After every save the script writes the sidecar log. Don't skip it and don't
    write it by hand.
+
+7. **Bake off the same prompt before committing a model to a job.** For a hero
+   shot or any clip with on-screen text, run one identical prompt on two or three
+   video models (same seed idea, same ref) and compare lettering, hands and
+   realism before the full run. Price is not quality: in one public benchmark a
+   Kling 3.0 clip at about $0.60 matched a Seedance 2.5 clip at about $3.23 on
+   selfie-style UGC, while Seedance won on legible text. Say each run's cost in
+   the report so the comparison is visible. (source: Nate Herk, "This ONE GPT-6
+   Astra Skill Replaces Your Higgsfield Subscription", ingested 2026-10-01)
+8. **Per-use API vs flat subscription is a break-even call.** Below roughly 16 to
+   50 clips a month (varies by plan) pay-per-use wins, above it a subscription
+   does, and anything programmatic or bulk favors the API. Higgsfield's pay-per-use
+   API is wired in as of 2026-10-02 (`kling` verified live, `seedance-2.5` verified live 2026-10-08; recipe [models/higgsfield.md](models/higgsfield.md));
+   compute the break-even against our real monthly clip count before leaning on it,
+   and remember Drew does not spend money on trials. (source: same, ingested 2026-10-01)
 
 ## Adding a model
 

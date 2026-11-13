@@ -329,6 +329,29 @@ Theme by overriding tokens, six values and two fonts:
 }
 ```
 
+**Generated footage underneath, code on top (2026-10-08).** The premium hybrid is
+AI video or stills as the base plane with code-drawn motion layered over it:
+paths that draw, a mascot or object that follows the cursor and the scroll, live
+labels, counters. The footage gives the realism and the code gives the
+interactivity, which footage alone never has. Rules for the code layer:
+
+- **Every moving element has a job.** It points at something, explains
+  something, or answers the pointer. Motion that only decorates comes out.
+- **One render function per section.** A section's loop is one function of time
+  (or `--sc-p`), so it can be seeked, reduced and tested on its own.
+- **A loop's last frame equals its first.** Draw ambient loops in code and close
+  them exactly, or the seam shows every cycle. Same for any generated clip that
+  loops: give it the same start and end frame (`--ref` and `--end-frame` on
+  `seedance-2.5` / `kling` in `/generate`).
+
+**Ship an X-ray toggle.** Every build gets a dev-only switch (`?xray` in the URL,
+or the `x` key) that tints each layer by where it came from and labels it:
+generated video, generated still, real asset, code. Mark layers with
+`data-sc-src="video|still|real|code"` and let the toggle read that. It turns
+"what is this page made of" into one screenshot. Use it in Step 5 to check the
+asset budget went to the peak, and show it to the client when they ask what was
+custom-built. It is invisible unless asked for, so it ships.
+
 ## Step 5: Verify by scrolling it
 
 Not optional, and not "it should work." A scroll page has no single state:
@@ -401,6 +424,8 @@ machine-made.
 | `transition: all`, or animating width/height/top/left | `transform` and `opacity`; `clip-path` for wipes |
 | Gradient text, neon glow, zero-offset coloured halo shadows | Weight and size for emphasis; shadows with offset and blur |
 | Autoplaying audio, or any audio at all on a scrub clip | Strip the track. `encode.sh` already does |
+| A moving element with no job, or a loop whose last frame is not its first | Cut it, or close the loop exactly. See Step 4 |
+| Layers with no `data-sc-src`, so the X-ray toggle shows nothing | Mark every layer video, still, real or code |
 | Shipping without running Step 5 | Run Step 5 |
 
 ## Output

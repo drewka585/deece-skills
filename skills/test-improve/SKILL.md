@@ -59,13 +59,13 @@ Defaults to desktop (1440×900) and mobile (390×844). Useful flags:
 | `--viewport desktop\|mobile\|both` | narrow the run — **one value, not repeatable.** `--viewport desktop --viewport mobile` runs ONLY mobile, silently, and the report looks like a complete pass. Use `--viewport both`. |
 | `--full-page` | whole scroll height, not just the fold |
 | `--scroll-sweep N` | N viewport frames at evenly spaced scroll positions (`<prefix>--sweep-NN.png`), each probed for horizontal overflow. **Mandatory for parallax, pinned, stacked-card or reveal-on-scroll pages**: a full-page capture flattens every scroll state into one frame and cannot show a layer that jumps or a reveal that never fires. Read the frames. Manifest routes take `"scrollSweep": N`. |
-| `--flow flows/x.json` | click/fill through a real interaction. **Mandatory for tabs, filters, segmented controls and disclosures**: the gate renders a route as it loads and checks that frame, so a control that works on load and breaks on its second option passes silently. Put an `expectPresent` on the clicked control's own selected marker (`[aria-pressed="true"]`), anchored inside its container, so a click that never landed fails instead of quietly re-shooting the default state. A `--flow` file is a bare array of steps. The `{"steps": [...]}` object form belongs only inside a manifest route's `"flows"`, and passing it on the flag raises an AttributeError. Manifest routes take `"flows": [...]`. |
+| `--flow flows/x.json` | click/fill through a real interaction. **Mandatory for tabs, filters, segmented controls and disclosures**: the gate renders a route as it loads and checks that frame, so a control that works on load and breaks on its second option passes silently. Assert the clicked control's own selected marker (`[aria-pressed="true"]`), anchored inside its container, so a click that never landed fails instead of quietly re-shooting the default state. A `--flow` file is a bare array of steps, and steps accept only wait/waitFor/click/hover/press/goBack/screenshot (plus fill): `expectPresent` is a key on a manifest flow object, not a step, so in a bare flow use a `waitFor` on the marker, which fails on timeout. The `{"steps": [...]}` object form belongs only inside a manifest route's `"flows"`, and passing it on the flag raises an AttributeError. Manifest routes take `"flows": [...]`. |
 | `--out <dir>` | pin the output location |
 | `--manifest execution/manifests/<app>.json` | run a whole app: every route, both themes, role fixtures, expected final URLs |
 | `--base-url http://localhost:32NN` | point a manifest at a lane instead of its default host |
 | `--only <path>` | narrow a manifest run — repeatable, but **matches the route's PATH (`/dashboard`), not its name.** A filter matching nothing produces an empty report, zero screenshots, and **exit 0** — which reads as a clean pass. Confirm the run actually shot the routes you named. |
 | `--theme light\|dark\|both\|none` | force the theme and assert `<html class="dark">` actually took |
-| `--expect-url <path\|re:...>` | opt-in, `--url` mode: fail if the final URL isn't this |
+| `--expect-url <path\|re:...>` | opt-in, `--url` mode: fail if the final URL isn't this (applies to every `--url` in the run, so check two pages in two runs). For an authed API check behind Cloudflare, Python urllib gets error 1010 and Playwright `context.request` can 401: use an in-page `page.evaluate(fetch(...))` instead |
 
 **For an auth-gated app, use the manifest.** A bare `--url` run follows the login
 redirect, screenshots `/login`, gets a 200 and reports **clean** — the gate passes
@@ -119,6 +119,35 @@ State the final run's result explicitly, with numbers:
 > `.tmp/visual_check/20260725-141200/`
 
 If anything is still failing, say so plainly and do not describe the work as done.
+
+## A green gate that asserts the wrong thing is worse than no gate
+
+A manifest entry that names only the page's own heading **passes when the feature is
+missing.** Measured 2026-09-20 on a client's operations dashboard: the property and client
+routes asserted their `<h1>` and nothing else, so both would have gone green with the CAPS
+breakdown table — the entire deliverable of the item being tested — absent from the page. The
+gate was not weak, it was vacuous, and it had been reporting clean for days.
+
+**Assert the thing the change was about, not the page that contains it.** After adding a
+component, add a selector that fails if that component is gone, and confirm it fails by
+looking for it before you wire the component up. A gate you never watched go red is a
+guess.
+
+Two traps when adding those selectors to React:
+
+- **A `data-testid` passed to a component that spreads no extra props is dropped silently,
+  and `tsc` will not catch it.** JSX attribute names containing a hyphen skip excess-property
+  checking entirely, so `<Card data-testid="x">` typechecks clean against
+  `{children, className}` and renders nothing. `npx tsc --noEmit` exited 0 while eight gate
+  runs failed on a selector that could never match. Put the testid on a real DOM element —
+  the `<table>`, not the wrapper — or thread it through the component's props explicitly.
+- **`aria-pressed` and friends are not unique.** Reaching for `button[aria-pressed]` to find
+  a filter tile also matched the theme switcher and the language picker. Give the thing its
+  own `data-testid` plus a `data-<key>` for the variant, and select on that.
+
+And when the deliverable is a **navigation**, assert the URL. A filter that filters in place
+without routing leaves every content assertion passing, so `expectUrl` (`re:scope=behind`) is
+the assertion carrying the actual requirement.
 
 ## Scope
 
