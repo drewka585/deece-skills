@@ -1,6 +1,7 @@
 ---
 name: premium-web
-description: Design and build a premium website, landing page or UI screen the DeeCe way: pull real references first (styles.refero.design design systems, 21st.dev components, collectui.com motion shots, the Dribbble teardown library), derive tokens from them plus the brand, pick a scroll-craft page grammar and signature move, reuse ui-library / 21st.dev components before writing, and verify by scrolling. Use when Drew says "build a website", "landing page", "make this page look better / premium / less AI", "website inspiration", "what does refero have for X", "find a component on 21st.dev", "tear down this dribbble shot", "what is on collect ui for X", or starts any new UI build.
+description: >-
+  Design and build a premium website, landing page or UI screen the DeeCe way: pull real references first (styles.refero.design design systems, 21st.dev components, collectui.com motion shots, the Dribbble teardown library), derive tokens from them plus the brand, pick a scroll-craft page grammar and signature move, reuse ui-library / 21st.dev components before writing, and verify by scrolling. Use when Drew says "build a website", "landing page", "make this page look better / premium / less AI", "website inspiration", "what does refero have for X", "find a component on 21st.dev", "tear down this dribbble shot", "what is on collect ui for X", or starts any new UI build.
 ---
 
 # premium-web
